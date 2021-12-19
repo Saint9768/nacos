@@ -397,6 +397,7 @@ public class InstanceController {
                 serviceName, namespaceId);
         BeatInfoInstanceBuilder builder = BeatInfoInstanceBuilder.newBuilder();
         builder.setRequest(request);
+        // 处理心跳
         int resultCode = getInstanceOperator()
                 .handleBeat(namespaceId, serviceName, ip, port, clusterName, clientBeat, builder);
         result.put(CommonParams.CODE, resultCode);

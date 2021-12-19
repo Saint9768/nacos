@@ -78,7 +78,10 @@ public class ClientBeatProcessor implements BeatProcessor {
                 if (Loggers.EVT_LOG.isDebugEnabled()) {
                     Loggers.EVT_LOG.debug("[CLIENT-BEAT] refresh beat: {}", rsInfo.toString());
                 }
+                // 标记当前心跳的时间，用于标记与下一次心跳的间隔，进而决定服务是否需要剔除、下线。
                 instance.setLastBeat(System.currentTimeMillis());
+                
+                // 如果原本服务是不可用的，现在接收到心跳请求之后，恢复服务的健康状态，通知客户端服务可用了
                 if (!instance.isMarked() && !instance.isHealthy()) {
                     instance.setHealthy(true);
                     Loggers.EVT_LOG

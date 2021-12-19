@@ -112,6 +112,7 @@ public class InstanceOperatorServiceImpl implements InstanceOperator {
     
     @Override
     public void registerInstance(String namespaceId, String serviceName, Instance instance) throws NacosException {
+        // 组装服务实例信息：IP、port等
         com.alibaba.nacos.naming.core.Instance coreInstance = parseInstance(instance);
         serviceManager.registerInstance(namespaceId, serviceName, coreInstance);
     }
@@ -191,7 +192,8 @@ public class InstanceOperatorServiceImpl implements InstanceOperator {
         }
         
         checkIfDisabled(service);
-        
+
+        // 这里是获取服务注册信息的关键代码
         List<com.alibaba.nacos.naming.core.Instance> srvedIps = service
                 .srvIPs(Arrays.asList(StringUtils.split(cluster, StringUtils.COMMA)));
         
@@ -284,7 +286,8 @@ public class InstanceOperatorServiceImpl implements InstanceOperator {
             RsInfo clientBeat, BeatInfoInstanceBuilder builder) throws NacosException {
         com.alibaba.nacos.naming.core.Instance instance = serviceManager
                 .getInstance(namespaceId, serviceName, cluster, ip, port);
-        
+
+        // 如果服务还没有注册，先注册服务
         if (instance == null) {
             if (clientBeat == null) {
                 return NamingResponseCode.RESOURCE_NOT_FOUND;
@@ -295,9 +298,11 @@ public class InstanceOperatorServiceImpl implements InstanceOperator {
             instance = parseInstance(builder.setBeatInfo(clientBeat).setServiceName(serviceName).build());
             serviceManager.registerInstance(namespaceId, serviceName, instance);
         }
-        
+
+        // 获取服务信息
         Service service = serviceManager.getService(namespaceId, serviceName);
-        
+
+        // 校验服务不能为null
         serviceManager.checkServiceIsNull(service, namespaceId, serviceName);
         
         if (clientBeat == null) {
@@ -306,6 +311,8 @@ public class InstanceOperatorServiceImpl implements InstanceOperator {
             clientBeat.setPort(port);
             clientBeat.setCluster(cluster);
         }
+
+        // 处理客户端心跳
         service.processClientBeat(clientBeat);
         return NamingResponseCode.OK;
     }

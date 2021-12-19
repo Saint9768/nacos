@@ -97,6 +97,7 @@ public class ClientBeatCheckTask implements BeatCheckTask {
             
             // first set health status of instances:
             for (Instance instance : instances) {
+                // 当前时间 与 上次心跳时间的差值大于阈值，将服务实例状态标记为不健康
                 if (System.currentTimeMillis() - instance.getLastBeat() > instance.getInstanceHeartBeatTimeOut()) {
                     if (!instance.isMarked()) {
                         if (instance.isHealthy()) {
@@ -127,6 +128,7 @@ public class ClientBeatCheckTask implements BeatCheckTask {
                     // delete instance
                     Loggers.SRV_LOG.info("[AUTO-DELETE-IP] service: {}, ip: {}", service.getName(),
                             JacksonUtils.toJson(instance));
+                    // 服务下线、剔除
                     deleteIp(instance);
                 }
             }
