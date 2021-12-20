@@ -137,9 +137,11 @@ public class NamingSubscriberServiceV1Impl implements NamingSubscriberService {
      */
     public void addClient(String namespaceId, String serviceName, String clusters, String agent,
             InetSocketAddress socketAddr, DataSource dataSource, String tenant, String app) {
-        
+
+        // 初始化推送客户端实例PushClient
         PushClient client = new PushClient(namespaceId, serviceName, clusters, agent, socketAddr, dataSource, tenant,
                 app);
+        // 添加推送目标客户端
         addClient(client);
     }
     
@@ -150,17 +152,21 @@ public class NamingSubscriberServiceV1Impl implements NamingSubscriberService {
      */
     public void addClient(PushClient client) {
         // client is stored by key 'serviceName' because notify event is driven by serviceName change
+        // 客户端由键“ serviceName”存储，因为通知事件由serviceName更改驱动
         String serviceKey = UtilsAndCommons.assembleFullServiceName(client.getNamespaceId(), client.getServiceName());
         ConcurrentMap<String, PushClient> clients = clientMap.get(serviceKey);
+        // 如果获取不到客户端想调用的ServiceName对应的推送客户端，则新建推送客户端，并缓存
         if (clients == null) {
             clientMap.putIfAbsent(serviceKey, new ConcurrentHashMap<>(1024));
             clients = clientMap.get(serviceKey);
         }
         
         PushClient oldClient = clients.get(client.toString());
+        // 存在老的PushClient，则刷新
         if (oldClient != null) {
             oldClient.refresh();
         } else {
+            // 否则缓存PushClient
             PushClient res = clients.putIfAbsent(client.toString(), client);
             if (res != null) {
                 Loggers.PUSH.warn("client: {} already associated with key {}", res.getAddrStr(), res);

@@ -171,6 +171,7 @@ public class InstanceOperatorServiceImpl implements InstanceOperator {
         
         // now try to enable the push
         try {
+            // 尝试启用推送服务UdpPushService，即服务实例信息发生变更时通过UDP的方式通知Nacos Client
             if (subscriber.getPort() > 0 && pushService.canEnablePush(subscriber.getAgent())) {
                 subscriberServiceV1.addClient(namespaceId, serviceName, cluster, subscriber.getAgent(),
                         new InetSocketAddress(clientIP, subscriber.getPort()), pushDataSource, StringUtils.EMPTY,
@@ -190,18 +191,20 @@ public class InstanceOperatorServiceImpl implements InstanceOperator {
             result.setCacheMillis(cacheMillis);
             return result;
         }
-        
+
+        // 检查服务是否禁用
         checkIfDisabled(service);
 
-        // 这里是获取服务注册信息的关键代码
+        // 这里是获取服务注册信息的关键代码，获取所有服务的永久和临时实例列表
         List<com.alibaba.nacos.naming.core.Instance> srvedIps = service
                 .srvIPs(Arrays.asList(StringUtils.split(cluster, StringUtils.COMMA)));
         
-        // filter ips using selector:
+        // filter ips using selector，选择器过滤服务
         if (service.getSelector() != null && StringUtils.isNotBlank(clientIP)) {
             srvedIps = selectorManager.select(service.getSelector(), clientIP, srvedIps);
         }
-        
+
+        // 如果找不到服务则返回当前服务
         if (CollectionUtils.isEmpty(srvedIps)) {
             
             if (Loggers.SRV_LOG.isDebugEnabled()) {
