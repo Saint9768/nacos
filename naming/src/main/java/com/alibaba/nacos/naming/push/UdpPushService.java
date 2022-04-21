@@ -130,6 +130,7 @@ public class UdpPushService implements ApplicationContextAware, ApplicationListe
         Future future = GlobalExecutor.scheduleUdpSender(() -> {
             try {
                 Loggers.PUSH.info(serviceName + " is changed, add it to push queue.");
+                // 获取指定namespace、serviceName下的所有PushClient，todo clientMap是服务发现时填充数据的？
                 ConcurrentMap<String, PushClient> clients = subscriberServiceV1.getClientMap()
                         .get(UtilsAndCommons.assembleFullServiceName(namespaceId, serviceName));
                 if (MapUtils.isEmpty(clients)) {
@@ -172,7 +173,8 @@ public class UdpPushService implements ApplicationContextAware, ApplicationListe
                     Loggers.PUSH.info("serviceName: {} changed, schedule push for: {}, agent: {}, key: {}",
                             client.getServiceName(), client.getAddrStr(), client.getAgent(),
                             (ackEntry == null ? null : ackEntry.getKey()));
-                    
+
+                    // 发送UDP请求
                     udpPush(ackEntry);
                 }
             } catch (Exception e) {
@@ -383,6 +385,7 @@ public class UdpPushService implements ApplicationContextAware, ApplicationListe
             udpSendTimeMap.put(ackEntry.getKey(), System.currentTimeMillis());
             
             Loggers.PUSH.info("send udp packet: " + ackEntry.getKey());
+            // 发送UDP请求
             udpSocket.send(ackEntry.getOrigin());
             
             ackEntry.increaseRetryTime();

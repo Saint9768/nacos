@@ -269,10 +269,11 @@ public class Service extends com.alibaba.nacos.api.naming.pojo.Service implement
                 List<Instance> clusterIPs = ipMap.get(instance.getClusterName());
                 if (clusterIPs == null) {
                     clusterIPs = new LinkedList<>();
+                    // 初始化cluster集群下的服务实例信息
                     ipMap.put(instance.getClusterName(), clusterIPs);
                 }
 
-                // 将新注册的那个实例添加到 集群中
+                // 将新注册的那个实例添加到集群(某区域的机房)中
                 clusterIPs.add(instance);
             } catch (Exception e) {
                 Loggers.SRV_LOG.error("[NACOS-DOM] failed to process ip: " + instance, e);

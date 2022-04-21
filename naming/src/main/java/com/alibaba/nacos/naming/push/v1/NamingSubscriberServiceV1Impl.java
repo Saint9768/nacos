@@ -43,7 +43,8 @@ import java.util.concurrent.TimeUnit;
 @org.springframework.stereotype.Service
 @Deprecated
 public class NamingSubscriberServiceV1Impl implements NamingSubscriberService {
-    
+
+    // 服务发现时，往其中添加数据
     private final ConcurrentMap<String, ConcurrentMap<String, PushClient>> clientMap = new ConcurrentHashMap<>();
     
     public NamingSubscriberServiceV1Impl() {
